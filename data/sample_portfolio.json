@@ -1,0 +1,28 @@
+{
+  "portfolio_id": "PORT-2026-0442",
+  "fund": "Alpha Growth Opportunities Fund",
+  "as_of": "2026-07-11T09:15:32Z",
+  "type": "Multi-Asset – Long Only",
+  "holdings": [
+    {
+      "issuer": "Reliance Industries Ltd",
+      "asset_type": "Equity",
+      "sector": "Energy",
+      "geography": "India",
+      "market_value": 9800000,
+      "weight_pct": 9.8,
+      "volatility_30d": 0.32,
+      "correlation_group": "cluster-1"
+    },
+    {
+      "issuer": "Company B",
+      "asset_type": "Equity",
+      "sector": "Energy",
+      "geography": "India",
+      "market_value": 14400000,
+      "weight_pct": 22.4,
+      "volatility_30d": 0.26,
+      "correlation_group": "cluster-1"
+    }
+  ]
+}
