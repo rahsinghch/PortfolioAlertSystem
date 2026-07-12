@@ -7,4 +7,5 @@ anthropic==3.0.1
 gradio==3.45.0
 streamlit==1.29.0
 httpx==0.24.0
+python-multipart==0.0.9
 pytest==8.4.0

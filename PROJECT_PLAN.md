@@ -25,14 +25,16 @@ This plan is based on the Hackathon problem statement in `Problem Statement Hack
 
 ### 3.2 Proposed module breakdown
 - `src/data_loader.py` — input ingestion from JSON/CSV and batch feeds
-- `src/normalizer.py` — portfolio normalization and schema enforcement
+- `src/normalizer.py` — portfolio normalization and schema enforcement, including converting an uploaded CSV or manually edited table into the canonical schema
 - `src/ai_client.py` — Anthropic Claude wrapper and prompt handling
 - `src/risk_engine.py` — limit breach detection, severity scoring, correlation checks
+- `src/visualization.py` — chart-ready DataFrames for concentration and correlation risk, colored by status
 - `src/notifier.py` — downstream actions and audit trail logic
 - `src/config.py` — environment variables and runtime config
-- `src/app.py` — Hugging Face / local application entrypoint
-- `api/app.py` — Vercel-friendly API entrypoint
+- `src/app.py` — Hugging Face / local application entrypoint (multi-tab Gradio UI: paste JSON, file upload, manual entry, sample picker)
+- `api/app.py` — Vercel-friendly API entrypoint (JSON body, file upload, and sample endpoints)
 - `docs/prompts.md` — prompt design for Claude
+- `docs/usage.md` — input methods and chart-reading guide
 - `tests/` — unit tests for each layer
 
 ## 4. Folder structure
@@ -47,6 +49,7 @@ application/
     app.py
   docs/
     prompts.md
+    usage.md
   src/
     app.py
     config.py
@@ -54,16 +57,22 @@ application/
     data_loader.py
     normalizer.py
     risk_engine.py
+    visualization.py
     notifier.py
     models.py
   data/
     sample_portfolio.json
+    sample_portfolio_moderate.json
+    sample_portfolio_diversified.json
     schema.json
   tests/
     test_data_loader.py
     test_risk_engine.py
     test_ai_client.py
     test_notifier.py
+    test_normalizer.py
+    test_visualization.py
+    test_api.py
   Problem Statement Hackathon 4 Series.pdf
 ```
 
@@ -93,6 +102,8 @@ application/
 - Build a simple Hugging Face Space UI with Gradio or Streamlit.
 - Build a Vercel-friendly API wrapper with FastAPI.
 - Ensure the demo can ingest sample data, run analysis, and display results.
+- Support multiple ways to bring in portfolio data — paste JSON, upload a `.json`/`.csv` file, edit a manual holdings table, or pick a built-in sample — so the same analysis path can be exercised without writing a payload by hand. See `docs/usage.md`.
+- Visualize concentration and correlation risk as bar charts colored by breach status (OK/WARNING/BREACH/WATCH/FLAGGED), rather than only exposing severity as text, so risk drivers are visible at a glance.
 
 ### 5.6 Phase 6 — Testing and docs
 - Add tests for normalization, Claude prompt creation, scoring logic, and alert generation.

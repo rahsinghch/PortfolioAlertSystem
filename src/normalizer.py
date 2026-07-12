@@ -1,7 +1,8 @@
 """Normalize raw portfolio data into canonical schema for analysis."""
 
 from .models import Portfolio, Holding
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
+import pandas as pd
 
 
 def _normalize_holding(item: Dict[str, Any]) -> Holding:
@@ -63,3 +64,19 @@ def normalize_portfolio(raw: Dict[str, Any]) -> Portfolio:
         as_of=str(raw.get("as_of", raw.get("asOf", ""))).strip() or None,
         holdings=holdings,
     )
+
+
+def dataframe_to_raw_portfolio(
+    holdings_df: pd.DataFrame,
+    portfolio_id: str,
+    fund: str,
+    as_of: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Turn a holdings table (CSV upload or manual entry grid) into a raw portfolio payload."""
+    records = holdings_df.dropna(how="all").to_dict("records")
+    return {
+        "portfolio_id": portfolio_id,
+        "fund": fund,
+        "as_of": as_of,
+        "holdings": records,
+    }

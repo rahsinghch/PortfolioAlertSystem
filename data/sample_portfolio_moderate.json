@@ -1,0 +1,23 @@
+{
+  "portfolio_id": "PORT-2026-0512",
+  "fund": "Emerging Markets Opportunities Fund",
+  "as_of": "2026-07-11T09:00:00Z",
+  "type": "Multi-Asset - Long Only",
+  "holdings": [
+    {"issuer": "Sunrise Energy Corp", "asset_type": "Equity", "sector": "Energy", "geography": "India", "market_value": 7600000, "weight_pct": 7.6, "volatility_30d": 0.28, "correlation_group": "cluster-energy"},
+    {"issuer": "Horizon Power Ltd", "asset_type": "Equity", "sector": "Energy", "geography": "India", "market_value": 7600000, "weight_pct": 7.6, "volatility_30d": 0.24, "correlation_group": "cluster-energy"},
+    {"issuer": "Apex Renewables Ltd", "asset_type": "Equity", "sector": "Energy", "geography": "India", "market_value": 7600000, "weight_pct": 7.6, "volatility_30d": 0.22, "correlation_group": null},
+    {"issuer": "Issuer-T1", "asset_type": "Equity", "sector": "Technology", "geography": "US", "market_value": 6433300, "weight_pct": 6.4333, "volatility_30d": 0.17, "correlation_group": null},
+    {"issuer": "Issuer-T2", "asset_type": "Bond", "sector": "Technology", "geography": "Europe", "market_value": 6433300, "weight_pct": 6.4333, "volatility_30d": 0.11, "correlation_group": null},
+    {"issuer": "Issuer-T3", "asset_type": "Equity", "sector": "Technology", "geography": "Asia", "market_value": 6433300, "weight_pct": 6.4333, "volatility_30d": 0.16, "correlation_group": null},
+    {"issuer": "Issuer-H1", "asset_type": "Bond", "sector": "Healthcare", "geography": "US", "market_value": 6433300, "weight_pct": 6.4333, "volatility_30d": 0.10, "correlation_group": null},
+    {"issuer": "Issuer-H2", "asset_type": "Equity", "sector": "Healthcare", "geography": "Europe", "market_value": 6433300, "weight_pct": 6.4333, "volatility_30d": 0.13, "correlation_group": null},
+    {"issuer": "Issuer-H3", "asset_type": "Bond", "sector": "Healthcare", "geography": "Asia", "market_value": 6433300, "weight_pct": 6.4333, "volatility_30d": 0.09, "correlation_group": null},
+    {"issuer": "Issuer-F1", "asset_type": "Equity", "sector": "Financials", "geography": "US", "market_value": 6433300, "weight_pct": 6.4333, "volatility_30d": 0.15, "correlation_group": null},
+    {"issuer": "Issuer-F2", "asset_type": "Bond", "sector": "Financials", "geography": "Europe", "market_value": 6433300, "weight_pct": 6.4333, "volatility_30d": 0.12, "correlation_group": null},
+    {"issuer": "Issuer-F3", "asset_type": "Equity", "sector": "Financials", "geography": "Asia", "market_value": 6433300, "weight_pct": 6.4333, "volatility_30d": 0.14, "correlation_group": null},
+    {"issuer": "Issuer-C1", "asset_type": "Bond", "sector": "Consumer", "geography": "US", "market_value": 6433300, "weight_pct": 6.4333, "volatility_30d": 0.08, "correlation_group": null},
+    {"issuer": "Issuer-C2", "asset_type": "Equity", "sector": "Consumer", "geography": "Europe", "market_value": 6433300, "weight_pct": 6.4333, "volatility_30d": 0.12, "correlation_group": null},
+    {"issuer": "Issuer-C3", "asset_type": "Bond", "sector": "Consumer", "geography": "Asia", "market_value": 6433300, "weight_pct": 6.4333, "volatility_30d": 0.09, "correlation_group": null}
+  ]
+}

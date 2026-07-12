@@ -1,0 +1,23 @@
+{
+  "portfolio_id": "PORT-2026-0501",
+  "fund": "Diversified Balanced Fund",
+  "as_of": "2026-07-10T09:00:00Z",
+  "type": "Multi-Asset - Long Only",
+  "holdings": [
+    {"issuer": "Issuer-01", "asset_type": "Equity", "sector": "Technology", "geography": "US", "market_value": 10000000, "weight_pct": 6.6667, "volatility_30d": 0.18, "correlation_group": null},
+    {"issuer": "Issuer-02", "asset_type": "Bond", "sector": "Healthcare", "geography": "Europe", "market_value": 10000000, "weight_pct": 6.6667, "volatility_30d": 0.12, "correlation_group": null},
+    {"issuer": "Issuer-03", "asset_type": "Equity", "sector": "Financials", "geography": "Asia", "market_value": 10000000, "weight_pct": 6.6667, "volatility_30d": 0.15, "correlation_group": null},
+    {"issuer": "Issuer-04", "asset_type": "Bond", "sector": "Consumer", "geography": "US", "market_value": 10000000, "weight_pct": 6.6667, "volatility_30d": 0.10, "correlation_group": null},
+    {"issuer": "Issuer-05", "asset_type": "Equity", "sector": "Energy", "geography": "Europe", "market_value": 10000000, "weight_pct": 6.6667, "volatility_30d": 0.20, "correlation_group": null},
+    {"issuer": "Issuer-06", "asset_type": "Equity", "sector": "Technology", "geography": "Asia", "market_value": 10000000, "weight_pct": 6.6667, "volatility_30d": 0.17, "correlation_group": null},
+    {"issuer": "Issuer-07", "asset_type": "Bond", "sector": "Healthcare", "geography": "US", "market_value": 10000000, "weight_pct": 6.6667, "volatility_30d": 0.11, "correlation_group": null},
+    {"issuer": "Issuer-08", "asset_type": "Equity", "sector": "Financials", "geography": "Europe", "market_value": 10000000, "weight_pct": 6.6667, "volatility_30d": 0.14, "correlation_group": null},
+    {"issuer": "Issuer-09", "asset_type": "Bond", "sector": "Consumer", "geography": "Asia", "market_value": 10000000, "weight_pct": 6.6667, "volatility_30d": 0.09, "correlation_group": null},
+    {"issuer": "Issuer-10", "asset_type": "Equity", "sector": "Energy", "geography": "US", "market_value": 10000000, "weight_pct": 6.6667, "volatility_30d": 0.19, "correlation_group": null},
+    {"issuer": "Issuer-11", "asset_type": "Equity", "sector": "Technology", "geography": "Europe", "market_value": 10000000, "weight_pct": 6.6667, "volatility_30d": 0.16, "correlation_group": null},
+    {"issuer": "Issuer-12", "asset_type": "Bond", "sector": "Healthcare", "geography": "Asia", "market_value": 10000000, "weight_pct": 6.6667, "volatility_30d": 0.10, "correlation_group": null},
+    {"issuer": "Issuer-13", "asset_type": "Equity", "sector": "Financials", "geography": "US", "market_value": 10000000, "weight_pct": 6.6667, "volatility_30d": 0.13, "correlation_group": null},
+    {"issuer": "Issuer-14", "asset_type": "Bond", "sector": "Consumer", "geography": "Europe", "market_value": 10000000, "weight_pct": 6.6667, "volatility_30d": 0.08, "correlation_group": null},
+    {"issuer": "Issuer-15", "asset_type": "Equity", "sector": "Energy", "geography": "Asia", "market_value": 10000000, "weight_pct": 6.6667, "volatility_30d": 0.21, "correlation_group": null}
+  ]
+}
