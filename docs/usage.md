@@ -76,3 +76,7 @@ Every analysis (regardless of which input method produced it) renders four chart
   - 🔴 red = **FLAGGED** (correlated and over the 85% correlation-weight threshold)
 
 The severity summary above the charts uses the same color convention (🟢 LOW, 🟡 MEDIUM, 🟠 HIGH, 🔴 CRITICAL) so the headline severity and the chart-level detail always agree.
+
+## Token usage
+
+Every analysis result includes a `token_usage` field — `input_tokens`, `output_tokens`, and `total_tokens` — reported by the Claude call that generated the rationale. The severity summary shows the same figure as a "Tokens used" line. If `ANTHROPIC_API_KEY` isn't set (or the Claude call fails), no API call is made, the rationale falls back to a rule-based summary, and token usage reports as 0.

@@ -58,6 +58,9 @@ Limits (`DEFAULT_ISSUER_LIMIT`, `DEFAULT_SECTOR_LIMIT`, `DEFAULT_GEOGRAPHY_LIMIT
 ### Everything downstream degrades gracefully without config
 `ai_client.generate_rationale` falls back to a templated rule-based rationale if `ANTHROPIC_API_KEY` is unset or the API call fails — it never raises. `notifier.send_notifications` returns a `"skipped"` status per adapter (Slack/webhook/email) when the corresponding env var isn't set, rather than failing the whole analysis. This means the full pipeline runs end-to-end with zero configuration; tests and samples rely on this.
 
+### Token usage travels with the rationale, not separately
+`generate_rationale` returns `{"rationale": str, "token_usage": {"input_tokens", "output_tokens", "total_tokens"}}` in one call — both come from the same Claude API response, so they're fetched together rather than requiring a second request. `token_usage` is all zeros whenever no API call was made (missing key or failed request). `analyze_portfolio` surfaces this as a top-level `token_usage` field, and the Gradio severity summary renders it as a "Tokens used" line.
+
 ### Visualization uses a fixed status palette, not per-chart colors
 `src/visualization.py` builds the chart-ready DataFrames consumed by the Gradio `BarPlot`s, and defines `STATUS_COLORS` (OK/WARNING/BREACH/WATCH/FLAGGED) and `SEVERITY_COLORS` (LOW/MEDIUM/HIGH/CRITICAL) once, shared across every chart and the severity summary markdown — so a given status always renders the same color everywhere in the UI. See `docs/usage.md` for the full color legend.
 

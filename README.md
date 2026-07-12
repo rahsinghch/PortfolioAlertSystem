@@ -13,7 +13,7 @@ A Python implementation of the Wissen Technology Hackathon 2026 portfolio risk a
 - `data/`: Sample portfolios covering critical, medium, and low risk profiles.
 
 ## Features
-- **Concentration risk scoring** for issuer, sector, and geography limits, plus correlated-cluster detection, with `LOW`/`MEDIUM`/`HIGH`/`CRITICAL` severity and an AI-generated rationale.
+- **Concentration risk scoring** for issuer, sector, and geography limits, plus correlated-cluster detection, with `LOW`/`MEDIUM`/`HIGH`/`CRITICAL` severity and an AI-generated rationale, reporting the Claude token usage (input/output/total) spent on each analysis.
 - **Risk visualization** — bar charts for issuer/sector/geography concentration vs. their limits and for correlation cluster exposure, colored by status (OK/WARNING/BREACH/WATCH/FLAGGED) so severity is visible at a glance. See `docs/usage.md` for how to read them.
 - **Four ways to bring in data**: paste JSON, upload a `.json`/`.csv` file, edit a manual holdings table, or load one of three built-in sample portfolios. See `docs/usage.md` for details of each.
 - **Automated escalation**: Slack/webhook/email notification adapters and an audit trail entry per alert.

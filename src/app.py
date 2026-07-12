@@ -75,7 +75,7 @@ def analyze_portfolio(raw_portfolio: Dict[str, Any]) -> Dict[str, Any]:
     portfolio = normalize_portfolio(raw_portfolio)
     exposures = evaluate_exposures(portfolio)
     score = score_severity(exposures)
-    rationale = generate_rationale(exposures, score["severity"], score["confidence"])
+    rationale_result = generate_rationale(exposures, score["severity"], score["confidence"])
     action_objects = build_alert_actions(score["severity"])
     actions = [action.model_dump() for action in action_objects]
     audit_notes = record_audit_entry(portfolio.portfolio_id, f"Severity {score['severity']} with {len(actions)} escalation actions.")
@@ -87,7 +87,8 @@ def analyze_portfolio(raw_portfolio: Dict[str, Any]) -> Dict[str, Any]:
         "as_of": portfolio.as_of,
         "severity": score["severity"],
         "confidence": score["confidence"],
-        "rationale": rationale,
+        "rationale": rationale_result["rationale"],
+        "token_usage": rationale_result["token_usage"],
         "exposures": exposures,
         "actions": actions,
         "audit_notes": audit_notes,
@@ -107,12 +108,23 @@ def load_sample_portfolio() -> Dict[str, Any]:
     return load_portfolio_json(SAMPLE_PATH)
 
 
+def _token_usage_markdown(token_usage: Dict[str, int]) -> str:
+    total = token_usage.get("total_tokens", 0)
+    if not total:
+        return "**Tokens used:** 0 (rule-based fallback, no Claude call made)"
+    return (
+        f"**Tokens used:** {total} total "
+        f"({token_usage.get('input_tokens', 0)} in / {token_usage.get('output_tokens', 0)} out)"
+    )
+
+
 def _severity_summary_markdown(result: Dict[str, Any]) -> str:
     emoji = SEVERITY_EMOJI.get(result["severity"], "⚪")
     return (
         f"### {emoji} Severity: {result['severity']}  |  Confidence: {result['confidence']}%\n\n"
         f"**Portfolio:** {result['portfolio_id']} ({result['fund']})\n\n"
-        f"{result['rationale']}"
+        f"{result['rationale']}\n\n"
+        f"{_token_usage_markdown(result['token_usage'])}"
     )
 
 def _error_markdown(message: str) -> str:

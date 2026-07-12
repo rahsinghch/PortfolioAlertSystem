@@ -9,6 +9,8 @@ SYSTEM_PROMPT = (
     "Return only a single paragraph describing the top risk drivers, severity context, and recommended next steps."
 )
 
+ZERO_TOKEN_USAGE: Dict[str, int] = {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}
+
 
 def _build_prompt(exposures: Dict[str, Any], severity: str, confidence: float) -> str:
     exposure_lines = []
@@ -60,9 +62,24 @@ def _parse_response(payload: Dict[str, Any]) -> str:
     return str(payload.get("output", "")).strip()
 
 
-def generate_rationale(exposures: Dict[str, Any], severity: str, confidence: float) -> str:
+def _parse_token_usage(payload: Dict[str, Any]) -> Dict[str, int]:
+    usage = payload.get("usage") if isinstance(payload, dict) else None
+    if not isinstance(usage, dict):
+        return dict(ZERO_TOKEN_USAGE)
+    input_tokens = int(usage.get("input_tokens", 0) or 0)
+    output_tokens = int(usage.get("output_tokens", 0) or 0)
+    return {
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "total_tokens": input_tokens + output_tokens,
+    }
+
+
+def generate_rationale(exposures: Dict[str, Any], severity: str, confidence: float) -> Dict[str, Any]:
+    fallback_rationale = f"Severity {severity} with confidence {confidence}%. Exposures evaluated by rule-based analysis."
+
     if not ANTHROPIC_API_KEY:
-        return f"Severity {severity} with confidence {confidence}%. Exposures evaluated by rule-based analysis."
+        return {"rationale": fallback_rationale, "token_usage": dict(ZERO_TOKEN_USAGE)}
 
     request_payload = {
         "model": ANTHROPIC_MODEL,
@@ -83,6 +100,10 @@ def generate_rationale(exposures: Dict[str, Any], severity: str, confidence: flo
             timeout=20.0,
         )
         response.raise_for_status()
-        return _parse_response(response.json()) or f"Severity {severity} with confidence {confidence}%. Exposures evaluated by rule-based analysis."
+        payload = response.json()
+        return {
+            "rationale": _parse_response(payload) or fallback_rationale,
+            "token_usage": _parse_token_usage(payload),
+        }
     except Exception:
-        return f"Severity {severity} with confidence {confidence}%. Exposures evaluated by rule-based analysis."
+        return {"rationale": fallback_rationale, "token_usage": dict(ZERO_TOKEN_USAGE)}
