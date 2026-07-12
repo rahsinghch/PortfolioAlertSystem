@@ -73,11 +73,9 @@ built*). This document covers what's *missing or weak* in that system.
   production deployment runs with none of them set.
 
 ### UX and accessibility
-- **No table/text alternative to the bar charts.** The visualization work
-  followed a colorblind-safety-validated palette, but skipped the
-  accompanying "a table view exists" accessibility guidance — someone who
-  can't parse the charts at all (screen reader, print, etc.) has no
-  equivalent way to read the same data.
+- ~~No table/text alternative to the bar charts~~ **Fixed.** A Holdings
+  Detail table (`visualization.holdings_table_dataframe`) now ships
+  alongside the bar charts as a plain-data view.
 - **Dark mode was never validated.** The chart palette was checked against
   the light chart surface only.
 - **No export/download of a finished analysis.** Results are visible in
@@ -166,12 +164,11 @@ missing features:
    are old relative to current releases; they were checked for *existing*
    (do they install at all — see `DEVELOPMENT_RETROSPECTIVE.md` §3) but not
    for known CVEs.
-10. **The CSV template's weights don't sum to 100%.**
-    `data/sample_holdings_template.csv` has four rows summing to 31%
-    weight — fine mechanically (weights are used as given, not required to
-    total 100), but a user downloading it as a starting point may be
-    confused why the numbers don't add up, since the equivalent JSON
-    samples do total ~100%.
+10. ~~The CSV template's weights don't sum to 100%~~ **Fixed.**
+    `data/sample_holdings_template.csv` now sums to 100%, and two more CSV
+    samples were added (`sample_holdings_diversified.csv`,
+    `sample_holdings_concentrated.csv`) so the CSV path has known-good
+    LOW/CRITICAL examples, not just a generic template.
 11. **A portfolio with all-zero `market_value` and all-zero `weight_pct`
     produces a silent, misleadingly "safe" result.** `normalize_portfolio`
     only recomputes `weight_pct` from `market_value` when the total market

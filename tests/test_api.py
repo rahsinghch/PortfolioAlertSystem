@@ -38,6 +38,17 @@ def test_analyze_sample_endpoint_unknown_name():
     assert response.status_code == 404
 
 
+def test_all_samples_cover_every_severity_level():
+    client = TestClient(app)
+    samples = client.get("/samples").json()["samples"]
+    severities = set()
+    for sample in samples:
+        response = client.get(f"/samples/{sample['name']}")
+        assert response.status_code == 200
+        severities.add(response.json()["severity"])
+    assert severities == {"LOW", "MEDIUM", "HIGH", "CRITICAL"}
+
+
 def test_analyze_upload_json():
     client = TestClient(app)
     payload = b'{"portfolio_id": "P1", "fund": "Fund 1", "holdings": [{"issuer": "A", "asset_type": "Equity", "sector": "Tech", "geography": "US", "market_value": 100, "weight_pct": 100}]}'
@@ -64,6 +75,21 @@ def test_analyze_upload_csv():
     assert response.status_code == 200
     body = response.json()
     assert body["portfolio_id"] == "CSV-P1"
+
+
+def test_analyze_upload_csv_with_blank_correlation_group():
+    client = TestClient(app)
+    csv_bytes = (
+        b"issuer,asset_type,sector,geography,market_value,weight_pct,correlation_group\n"
+        b"Asset A,Equity,Tech,US,100,60,\n"
+        b"Asset B,Bond,Fixed Income,US,100,40,cluster-1\n"
+    )
+    response = client.post(
+        "/analyze/upload",
+        files={"file": ("holdings.csv", io.BytesIO(csv_bytes), "text/csv")},
+        data={"portfolio_id": "CSV-P2", "fund": "CSV Fund"},
+    )
+    assert response.status_code == 200
 
 
 def test_analyze_upload_rejects_unsupported_type():

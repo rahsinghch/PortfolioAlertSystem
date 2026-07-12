@@ -32,7 +32,7 @@ Gradio tab **"Upload File"**, or `POST /analyze/upload` (multipart form).
 
 - `.json` files are read as a full portfolio payload, same shape as above.
 - `.csv` files need one row per holding, with columns: `issuer, asset_type, sector, geography, market_value, weight_pct, volatility_30d, correlation_group`. Since a holdings CSV has no place for portfolio-level metadata, supply `portfolio_id`, `fund`, and (optionally) `as_of` as separate fields — form fields in the API, textboxes above the upload button in the UI.
-- Not sure where to start? The Gradio tab has two download links — a CSV template (`data/sample_holdings_template.csv`) and a full JSON example (`data/sample_portfolio.json`) — download one, edit it, and upload it back.
+- Not sure where to start? The Gradio tab has four download links — three CSVs (a starter template, a diversified/LOW-risk example, and a concentrated/CRITICAL-risk example) and a full JSON example — download one, edit it, and upload it back. See the table in `data/` below for what's in each.
 
 Example API call:
 ```
@@ -50,22 +50,26 @@ Gradio tab **"Manual Entry"** only (no direct API equivalent). An editable grid 
 Use this to sanity-check a hypothetical or "what-if" holding mix without preparing a file first.
 
 ### 4. Sample portfolios
-Gradio tab **"Sample Portfolios"** — a dropdown of three pre-built examples with different risk profiles (selecting one shows a description of what makes it that risk level, before you even run the analysis), or via the API:
+Gradio tab **"Sample Portfolios"** — a dropdown of five pre-built examples covering every severity level (selecting one shows a description of what makes it that risk level, before you even run the analysis), or via the API:
 
 - `GET /samples` — lists the available samples, each with a `name` and a `description` of its risk profile.
 - `GET /samples/{sample_name}` — runs the analysis for that sample directly.
 
-| Sample | Profile |
-|---|---|
-| Concentrated (Critical risk) | Two issuer breaches, one sector breach, a correlated cluster |
-| Emerging markets (Medium risk) | Issuer/sector warnings near their limits, no breaches |
-| Diversified (Low risk) | 15 holdings spread across issuers/sectors/geographies, everything within limits |
+| Sample (JSON) | Severity | Profile |
+|---|---|---|
+| Concentrated (Critical risk) | CRITICAL | Two issuer breaches, one sector breach, a correlated cluster |
+| Geography concentration (High risk) | HIGH | One geography (India) just over its 70% limit — every issuer and sector is clean; the only breach is a single one, one notch below CRITICAL |
+| Emerging markets (Medium risk) | MEDIUM | Issuer/sector warnings near their limits (not breaches), plus a correlated cluster below the flag threshold (WATCH) |
+| Correlation cluster flagged (Medium risk) | MEDIUM | 12 holdings sharing one correlation group total 85.8% combined weight — over the flag threshold (FLAGGED, not WATCH) — while every issuer/sector/geography is individually clean. Shows that a chart can flag red even when overall severity is only MEDIUM |
+| Diversified (Low risk) | LOW | 15 holdings spread across issuers/sectors/geographies, everything within limits |
+
+There are also three downloadable **CSV** samples in the Upload File tab — a starter template, a diversified/LOW-risk example (`data/sample_holdings_diversified.csv`), and a concentrated/CRITICAL-risk example (`data/sample_holdings_concentrated.csv`) — for trying the CSV path with known-good data instead of only JSON.
 
 Use this to see how the severity, rationale, and charts change across risk levels without preparing your own data.
 
 ## Reading the risk charts
 
-Every analysis (regardless of which input method produced it) renders four charts, in addition to the JSON result and a severity summary:
+Every analysis (regardless of which input method produced it) renders six visuals, in addition to the JSON result and a severity summary:
 
 - **Issuer / Sector / Geography Concentration** — one bar per issuer, sector, or geography, height = portfolio weight %. Bars are colored by status, not by identity, so the color always means the same thing across every chart:
   - 🟢 green = **OK** (within limit)
@@ -75,6 +79,8 @@ Every analysis (regardless of which input method produced it) renders four chart
 - **Correlation Cluster Exposure** — one bar per group of holdings flagged as correlated (same `correlation_group`, more than one holding), height = their combined weight %.
   - 🟠 orange = **WATCH** (correlated, under the flag threshold)
   - 🔴 red = **FLAGGED** (correlated and over the 85% correlation-weight threshold)
+- **Portfolio Composition (by Asset Type)** — one bar per asset type (Equity/Bond/...), height = combined portfolio weight %. This one isn't status-colored — there's no configured limit on asset type today, so it's a plain view of where the money sits, not a breach check.
+- **Holdings Detail** — a plain table listing every holding (issuer, asset type, sector, geography, weight %, market value), sorted by weight descending. It's the exact numbers behind every chart above, and a plain-data alternative for anyone who can't read the bar charts (screen reader, print, etc.).
 
 The severity summary above the charts uses the same color convention (🟢 LOW, 🟡 MEDIUM, 🟠 HIGH, 🔴 CRITICAL) so the headline severity and the chart-level detail always agree.
 
@@ -83,6 +89,8 @@ The Gradio UI also has a collapsible **"How to read this analysis"** panel above
 ## Understanding the portfolio itself
 
 Every severity summary includes a **"Portfolio snapshot"** line — holdings count, total market value, and the largest single position — so you can sanity-check what was actually analyzed (e.g. "did my CSV upload parse the number of rows I expected?") before digging into the risk charts. It's also available programmatically as the `portfolio_overview` field on every analysis result.
+
+Every analysis result also includes a `holdings` field — every holding as normalized (after alternate field names are resolved and `weight_pct` is auto-computed if it was left at 0) — so you can confirm exactly how your input was interpreted, not just the aggregated risk numbers. This is what feeds the Portfolio Composition chart and Holdings Detail table above.
 
 ## Token usage
 

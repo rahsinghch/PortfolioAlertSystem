@@ -1,3 +1,5 @@
+import io
+
 import pandas as pd
 
 from src.normalizer import dataframe_to_raw_portfolio, normalize_portfolio
@@ -51,3 +53,23 @@ def test_dataframe_to_raw_portfolio_drops_blank_rows():
     raw = dataframe_to_raw_portfolio(df, "CSV-002", "CSV Fund")
 
     assert len(raw["holdings"]) == 1
+
+
+def test_dataframe_to_raw_portfolio_handles_blank_optional_cells():
+    # A column with some blank cells and some filled ones (like correlation_group
+    # in a real CSV) parses as pandas' native string dtype, where a blank cell
+    # is its own NA marker rather than Python None or NaN as `object` dtype
+    # would give — this must still normalize cleanly instead of failing
+    # Pydantic validation on the blank rows.
+    csv_text = (
+        "issuer,asset_type,sector,geography,market_value,weight_pct,correlation_group\n"
+        "Asset A,Equity,Tech,US,100,50,\n"
+        "Asset B,Bond,Fixed Income,US,100,50,cluster-1\n"
+    )
+    df = pd.read_csv(io.StringIO(csv_text))
+
+    raw = dataframe_to_raw_portfolio(df, "CSV-003", "CSV Fund")
+    portfolio = normalize_portfolio(raw)
+
+    assert portfolio.holdings[0].correlation_group is None
+    assert portfolio.holdings[1].correlation_group == "cluster-1"

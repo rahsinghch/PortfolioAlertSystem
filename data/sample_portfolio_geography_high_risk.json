@@ -1,0 +1,22 @@
+{
+  "portfolio_id": "PORT-2026-0601",
+  "fund": "Global Growth Fund",
+  "as_of": "2026-07-13T09:00:00Z",
+  "type": "Multi-Asset - Long Only",
+  "holdings": [
+    {"issuer": "India-Tech-1", "asset_type": "Equity", "sector": "Technology", "geography": "India", "market_value": 7150000, "weight_pct": 7.15, "volatility_30d": 0.18, "correlation_group": null},
+    {"issuer": "India-Tech-2", "asset_type": "Bond", "sector": "Technology", "geography": "India", "market_value": 7150000, "weight_pct": 7.15, "volatility_30d": 0.12, "correlation_group": null},
+    {"issuer": "India-Tech-3", "asset_type": "Equity", "sector": "Technology", "geography": "India", "market_value": 7150000, "weight_pct": 7.15, "volatility_30d": 0.16, "correlation_group": null},
+    {"issuer": "India-Health-1", "asset_type": "Bond", "sector": "Healthcare", "geography": "India", "market_value": 7150000, "weight_pct": 7.15, "volatility_30d": 0.10, "correlation_group": null},
+    {"issuer": "India-Health-2", "asset_type": "Equity", "sector": "Healthcare", "geography": "India", "market_value": 7150000, "weight_pct": 7.15, "volatility_30d": 0.14, "correlation_group": null},
+    {"issuer": "India-Health-3", "asset_type": "Bond", "sector": "Healthcare", "geography": "India", "market_value": 7150000, "weight_pct": 7.15, "volatility_30d": 0.09, "correlation_group": null},
+    {"issuer": "India-Fin-1", "asset_type": "Equity", "sector": "Financials", "geography": "India", "market_value": 7150000, "weight_pct": 7.15, "volatility_30d": 0.15, "correlation_group": null},
+    {"issuer": "India-Fin-2", "asset_type": "Bond", "sector": "Financials", "geography": "India", "market_value": 7150000, "weight_pct": 7.15, "volatility_30d": 0.11, "correlation_group": null},
+    {"issuer": "India-Fin-3", "asset_type": "Equity", "sector": "Financials", "geography": "India", "market_value": 7150000, "weight_pct": 7.15, "volatility_30d": 0.13, "correlation_group": null},
+    {"issuer": "India-Consumer-1", "asset_type": "Equity", "sector": "Consumer", "geography": "India", "market_value": 7150000, "weight_pct": 7.15, "volatility_30d": 0.17, "correlation_group": null},
+    {"issuer": "US-Energy-1", "asset_type": "Equity", "sector": "Energy", "geography": "US", "market_value": 7125000, "weight_pct": 7.125, "volatility_30d": 0.20, "correlation_group": null},
+    {"issuer": "US-Consumer-1", "asset_type": "Bond", "sector": "Consumer", "geography": "US", "market_value": 7125000, "weight_pct": 7.125, "volatility_30d": 0.08, "correlation_group": null},
+    {"issuer": "Europe-Energy-1", "asset_type": "Equity", "sector": "Energy", "geography": "Europe", "market_value": 7125000, "weight_pct": 7.125, "volatility_30d": 0.19, "correlation_group": null},
+    {"issuer": "Europe-Consumer-1", "asset_type": "Bond", "sector": "Consumer", "geography": "Europe", "market_value": 7125000, "weight_pct": 7.125, "volatility_30d": 0.07, "correlation_group": null}
+  ]
+}

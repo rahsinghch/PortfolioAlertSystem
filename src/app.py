@@ -29,9 +29,17 @@ DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 SAMPLE_PATH = DATA_DIR / "sample_portfolio.json"
 CSV_TEMPLATE_PATH = DATA_DIR / "sample_holdings_template.csv"
 
+CSV_SAMPLE_DOWNLOADS = {
+    "CSV template (starter)": CSV_TEMPLATE_PATH,
+    "CSV example: Diversified (Low risk)": DATA_DIR / "sample_holdings_diversified.csv",
+    "CSV example: Concentrated (Critical risk)": DATA_DIR / "sample_holdings_concentrated.csv",
+}
+
 SAMPLE_PORTFOLIOS = {
     "Concentrated (Critical risk)": DATA_DIR / "sample_portfolio.json",
+    "Geography concentration (High risk)": DATA_DIR / "sample_portfolio_geography_high_risk.json",
     "Emerging markets (Medium risk)": DATA_DIR / "sample_portfolio_moderate.json",
+    "Correlation cluster flagged (Medium risk)": DATA_DIR / "sample_portfolio_correlation_flagged.json",
     "Diversified (Low risk)": DATA_DIR / "sample_portfolio_diversified.json",
 }
 
@@ -40,9 +48,19 @@ SAMPLE_DESCRIPTIONS = {
         "Two issuer breaches, one sector breach, and a correlated cluster — "
         "shows what a CRITICAL alert with multiple escalation actions looks like."
     ),
+    "Geography concentration (High risk)": (
+        "One geography (India) just over its 70% limit, with every issuer and sector "
+        "otherwise clean — shows a single-breach HIGH alert, one notch below CRITICAL."
+    ),
     "Emerging markets (Medium risk)": (
         "Issuer and sector weights sit near their limits (WARNING, not BREACH), plus a "
         "correlated cluster below the flag threshold — shows a MEDIUM alert with no breaches."
+    ),
+    "Correlation cluster flagged (Medium risk)": (
+        "12 holdings sharing one correlation group add up to 85.8% combined weight — over "
+        "the flag threshold (FLAGGED, not just WATCH) — while every individual issuer, sector, "
+        "and geography stays within limits. Shows how a chart can flag red even when the "
+        "overall severity is only MEDIUM."
     ),
     "Diversified (Low risk)": (
         "15 holdings spread across issuers, sectors, and geographies, all within limits — "
@@ -89,6 +107,8 @@ MANUAL_ENTRY_TEMPLATE = pd.DataFrame(
 
 EMPTY_CONCENTRATION = pd.DataFrame(columns=["key", "value_pct", "limit_pct", "status"])
 EMPTY_CORRELATION = pd.DataFrame(columns=["group", "weight_pct", "count", "status"])
+EMPTY_ALLOCATION = pd.DataFrame(columns=["asset_type", "weight_pct"])
+EMPTY_HOLDINGS_TABLE = pd.DataFrame(columns=["issuer", "asset_type", "sector", "geography", "weight_pct", "market_value"])
 
 SEVERITY_EMOJI = {"LOW": "\U0001F7E2", "MEDIUM": "\U0001F7E1", "HIGH": "\U0001F7E0", "CRITICAL": "\U0001F534"}
 
@@ -121,6 +141,7 @@ def analyze_portfolio(raw_portfolio: Dict[str, Any]) -> Dict[str, Any]:
         "rationale": rationale_result["rationale"],
         "token_usage": rationale_result["token_usage"],
         "portfolio_overview": portfolio_overview,
+        "holdings": [holding.model_dump() for holding in portfolio.holdings],
         "exposures": exposures,
         "actions": actions,
         "audit_notes": audit_notes,
@@ -184,12 +205,15 @@ def _how_to_read_markdown() -> str:
         "- 🔴 CRITICAL — multiple breaches, or one badly over its limit — act now\n\n"
         "**Chart colors** (same meaning in every chart): 🟢 OK · 🟡 WARNING (within 90% of the limit) · "
         "🔴 BREACH (over the limit) · 🟠 WATCH (correlated, under the flag threshold) · "
-        "🔴 FLAGGED (correlated, over the flag threshold)."
+        "🔴 FLAGGED (correlated, over the flag threshold).\n\n"
+        "**Portfolio Composition** (asset-type allocation) has no configured limit — it's a plain "
+        "view of where the money sits, not a breach check. **Holdings Detail** lists every holding "
+        "with its exact weight, as a plain-data alternative to the bar charts above."
     )
 
 
 def _render(result: Dict[str, Any]) -> Tuple[Any, ...]:
-    charts = build_charts(result["exposures"], result["severity"], result["confidence"])
+    charts = build_charts(result["exposures"], result["severity"], result["confidence"], result["holdings"])
     return (
         result,
         _severity_summary_markdown(result),
@@ -197,6 +221,8 @@ def _render(result: Dict[str, Any]) -> Tuple[Any, ...]:
         charts["sector"],
         charts["geography"],
         charts["correlation"],
+        charts["asset_allocation"],
+        charts["holdings_table"],
     )
 
 
@@ -208,6 +234,8 @@ def _error_render(message: str) -> Tuple[Any, ...]:
         EMPTY_CONCENTRATION,
         EMPTY_CONCENTRATION,
         EMPTY_CORRELATION,
+        EMPTY_ALLOCATION,
+        EMPTY_HOLDINGS_TABLE,
     )
 
 
@@ -267,13 +295,18 @@ def build_demo() -> Any:
         raise ImportError("Gradio is not installed. Install gradio to run the demo UI.")
 
     default_result = analyze_portfolio(load_sample_portfolio())
-    default_charts = build_charts(default_result["exposures"], default_result["severity"], default_result["confidence"])
+    default_charts = build_charts(
+        default_result["exposures"],
+        default_result["severity"],
+        default_result["confidence"],
+        default_result["holdings"],
+    )
 
     with gr.Blocks(title="Portfolio Risk Alert System") as demo:
         gr.Markdown(
             "## Portfolio Risk Alert System\n"
             "Bring in portfolio data any of four ways below, then review severity, rationale, "
-            "and concentration risk charts."
+            "concentration risk charts, portfolio composition, and a full holdings table."
         )
         with gr.Accordion("How to read this analysis", open=False):
             gr.Markdown(_how_to_read_markdown())
@@ -299,7 +332,8 @@ def build_demo() -> Any:
                     "below only apply to CSV uploads, since a holdings CSV has no place for that metadata."
                 )
                 with gr.Row():
-                    gr.File(value=str(CSV_TEMPLATE_PATH), label="Download: CSV template")
+                    for label, path in CSV_SAMPLE_DOWNLOADS.items():
+                        gr.File(value=str(path), label=f"Download: {label}")
                     gr.File(value=str(SAMPLE_PATH), label="Download: JSON example")
                 upload_file = gr.File(label="Portfolio file (.json or .csv)", file_types=[".json", ".csv"])
                 with gr.Row():
@@ -399,9 +433,42 @@ def build_demo() -> Any:
                 label="Correlation Clusters",
             )
 
+        gr.Markdown("### Portfolio Composition")
+        asset_allocation_chart = gr.BarPlot(
+            value=default_charts["asset_allocation"],
+            x="asset_type",
+            y="weight_pct",
+            tooltip=["asset_type", "weight_pct"],
+            x_title="Asset Type",
+            y_title="Weight %",
+            title="Portfolio Composition by Asset Type",
+            label="Asset Type Allocation",
+        )
+
+        gr.Markdown(
+            "### Holdings Detail\n"
+            "Every holding, sorted by weight — the exact numbers behind the charts above, "
+            "and a plain-data alternative for anyone who can't read the bar charts."
+        )
+        holdings_table = gr.Dataframe(
+            value=default_charts["holdings_table"],
+            headers=["issuer", "asset_type", "sector", "geography", "weight_pct", "market_value"],
+            label="Holdings",
+            interactive=False,
+        )
+
         output_json = gr.JSON(value=default_result, label="Full Analysis Output")
 
-        outputs = [output_json, severity_summary, issuer_chart, sector_chart, geography_chart, correlation_chart]
+        outputs = [
+            output_json,
+            severity_summary,
+            issuer_chart,
+            sector_chart,
+            geography_chart,
+            correlation_chart,
+            asset_allocation_chart,
+            holdings_table,
+        ]
 
         analyze_json_btn.click(fn=analyze_json_input, inputs=input_json, outputs=outputs)
         analyze_file_btn.click(

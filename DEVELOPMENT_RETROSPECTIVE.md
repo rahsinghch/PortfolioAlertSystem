@@ -104,6 +104,7 @@ came up, with the actual resolution:
 | A routine `vercel whoami` auth check silently triggered a real OAuth login | Caught immediately in the tool output, flagged transparently rather than continuing silently |
 | Hugging Face Spaces required a paid PRO plan for any Python-backed Space | Recognized as a real external account/billing constraint outside the agent's control; stopped and handed the decision back rather than searching for a workaround |
 | Changing `generate_rationale`'s return type (string → dict) risked breaking every caller silently | Grepped every call site and test first, then updated all of them in the same change |
+| New CSV sample files crashed with a Pydantic `ValidationError` on blank optional cells (e.g. an empty `correlation_group`) | Traced to pandas' newer native string dtype: a blank cell isn't Python `None` or `NaN` the way `object`-dtype columns give you — it's the dtype's own NA marker, which survived a first `.where(pd.notnull(df), None)` attempt and only actually converted to `None` after explicitly casting to `object` dtype first. Caught by testing the new sample files against the real pipeline before wiring them into the UI, not just adding them and assuming they'd work |
 
 ## 4. What this project teaches, and the concepts behind it
 

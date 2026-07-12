@@ -13,12 +13,12 @@ A Python implementation of the Wissen Technology Hackathon 2026 portfolio risk a
 - `api/app.py`: Vercel-ready FastAPI deployment skeleton.
 - `src/`: Python source code for ingestion, normalization, risk scoring, AI rationale, notifications, and the Gradio UI.
 - `src/visualization.py`: Builds the chart data behind the risk visualizations.
-- `data/`: Sample portfolios covering critical, medium, and low risk profiles.
+- `data/`: Five JSON sample portfolios (spanning LOW/MEDIUM×2/HIGH/CRITICAL) plus three CSV samples (starter template, diversified low-risk, concentrated critical-risk).
 
 ## Features
 - **Concentration risk scoring** for issuer, sector, and geography limits, plus correlated-cluster detection, with `LOW`/`MEDIUM`/`HIGH`/`CRITICAL` severity and an AI-generated rationale, reporting the Claude token usage (input/output/total) spent on each analysis.
-- **Risk visualization** — bar charts for issuer/sector/geography concentration vs. their limits and for correlation cluster exposure, colored by status (OK/WARNING/BREACH/WATCH/FLAGGED) so severity is visible at a glance. See `docs/usage.md` for how to read them.
-- **Four ways to bring in data**: paste JSON, upload a `.json`/`.csv` file (with downloadable templates in the UI), edit a manual holdings table, or load one of three built-in sample portfolios (each with an inline description of its risk profile). See `docs/usage.md` for details of each.
+- **Risk visualization** — bar charts for issuer/sector/geography concentration vs. their limits and for correlation cluster exposure, colored by status (OK/WARNING/BREACH/WATCH/FLAGGED); a portfolio composition chart by asset type; and a sortable holdings detail table as a plain-data alternative to the charts. See `docs/usage.md` for how to read them.
+- **Four ways to bring in data**: paste JSON, upload a `.json`/`.csv` file (with four downloadable examples in the UI — a CSV starter template plus diversified/concentrated CSV examples and a full JSON example), edit a manual holdings table, or load one of five built-in sample portfolios covering every severity level (each with an inline description of its risk profile). See `docs/usage.md` for details of each.
 - **Built to be understood, not just used**: an in-app "How to read this analysis" panel explaining the risk limits and color legend, and a "Portfolio snapshot" line (holdings count, total value, largest position) so you can sanity-check what was actually analyzed.
 - **Automated escalation**: Slack/webhook/email notification adapters and an audit trail entry per alert.
 

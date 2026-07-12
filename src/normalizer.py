@@ -6,18 +6,20 @@ import pandas as pd
 
 
 def _normalize_holding(item: Dict[str, Any]) -> Holding:
-    issuer = str(item.get("issuer", item.get("name", ""))).strip()
-    market_value = float(item.get("market_value", item.get("marketValue", 0.0)) or 0.0)
-    weight_pct = float(item.get("weight_pct", item.get("weight", 0.0)) or 0.0)
+    # `item` may come from a CSV/table where a blank cell is NaN (a float), not
+    # an absent key or None — `or` catches both, unlike `dict.get(key, default)`.
+    issuer = str(item.get("issuer") or item.get("name") or "").strip()
+    market_value = float(item.get("market_value") or item.get("marketValue") or 0.0)
+    weight_pct = float(item.get("weight_pct") or item.get("weight") or 0.0)
     return Holding(
         issuer=issuer,
-        asset_type=str(item.get("asset_type", item.get("asset_class", ""))).strip() or "Unknown",
-        sector=str(item.get("sector", "Unknown")).strip(),
-        geography=str(item.get("geography", item.get("country", "Unknown"))).strip() or "Unknown",
+        asset_type=str(item.get("asset_type") or item.get("asset_class") or "Unknown").strip() or "Unknown",
+        sector=str(item.get("sector") or "Unknown").strip() or "Unknown",
+        geography=str(item.get("geography") or item.get("country") or "Unknown").strip() or "Unknown",
         market_value=market_value,
         weight_pct=weight_pct,
-        volatility_30d=item.get("volatility_30d") if item.get("volatility_30d") is not None else item.get("volatility", None),
-        correlation_group=item.get("correlation_group"),
+        volatility_30d=item.get("volatility_30d") or item.get("volatility") or None,
+        correlation_group=item.get("correlation_group") or None,
     )
 
 
@@ -73,7 +75,11 @@ def dataframe_to_raw_portfolio(
     as_of: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Turn a holdings table (CSV upload or manual entry grid) into a raw portfolio payload."""
-    records = holdings_df.dropna(how="all").to_dict("records")
+    clean_df = holdings_df.dropna(how="all")
+    # Cast to object first: pandas' native string dtype can't hold Python
+    # None (it re-coerces blanks back to its own NA marker), only object can.
+    clean_df = clean_df.astype(object).where(pd.notnull(clean_df), None)
+    records = clean_df.to_dict("records")
     return {
         "portfolio_id": portfolio_id,
         "fund": fund,

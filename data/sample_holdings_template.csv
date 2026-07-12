@@ -1,5 +1,7 @@
 issuer,asset_type,sector,geography,market_value,weight_pct,volatility_30d,correlation_group
-Issuer A,Equity,Technology,US,5000000,10.0,0.15,
-Issuer B,Bond,Financials,Europe,3000000,6.0,0.08,
-Issuer C,Equity,Energy,India,4000000,8.0,0.22,cluster-1
-Issuer D,Equity,Energy,India,3500000,7.0,0.20,cluster-1
+Issuer A,Equity,Technology,US,25000000,25.0,0.15,
+Issuer B,Bond,Financials,Europe,20000000,20.0,0.08,
+Issuer C,Equity,Energy,India,15000000,15.0,0.22,cluster-1
+Issuer D,Equity,Energy,India,15000000,15.0,0.20,cluster-1
+Issuer E,Bond,Healthcare,US,15000000,15.0,0.10,
+Issuer F,Equity,Consumer,Asia,10000000,10.0,0.13,
