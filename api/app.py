@@ -7,7 +7,7 @@ import pandas as pd
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel
 
-from src.app import SAMPLE_PORTFOLIOS, analyze_portfolio as analyze_portfolio_workflow
+from src.app import SAMPLE_DESCRIPTIONS, SAMPLE_PORTFOLIOS, analyze_portfolio as analyze_portfolio_workflow
 from src.data_loader import load_portfolio_json
 from src.normalizer import dataframe_to_raw_portfolio
 
@@ -61,8 +61,13 @@ async def analyze_uploaded_file(
 
 
 @app.get("/samples")
-async def list_samples() -> Dict[str, List[str]]:
-    return {"samples": list(SAMPLE_PORTFOLIOS.keys())}
+async def list_samples() -> Dict[str, List[Dict[str, str]]]:
+    return {
+        "samples": [
+            {"name": name, "description": SAMPLE_DESCRIPTIONS.get(name, "")}
+            for name in SAMPLE_PORTFOLIOS
+        ]
+    }
 
 
 @app.get("/samples/{sample_name}")

@@ -64,6 +64,9 @@ Limits (`DEFAULT_ISSUER_LIMIT`, `DEFAULT_SECTOR_LIMIT`, `DEFAULT_GEOGRAPHY_LIMIT
 ### Visualization uses a fixed status palette, not per-chart colors
 `src/visualization.py` builds the chart-ready DataFrames consumed by the Gradio `BarPlot`s, and defines `STATUS_COLORS` (OK/WARNING/BREACH/WATCH/FLAGGED) and `SEVERITY_COLORS` (LOW/MEDIUM/HIGH/CRITICAL) once, shared across every chart and the severity summary markdown — so a given status always renders the same color everywhere in the UI. See `docs/usage.md` for the full color legend.
 
+### The UI explains itself instead of requiring the docs
+`analyze_portfolio` also returns a `portfolio_overview` field (holdings count, total market value, largest position) derived from data already computed by `risk_engine.evaluate_exposures` — no extra pass over the holdings. The Gradio UI surfaces this, plus a config-driven "How to read this analysis" legend (`_how_to_read_markdown`) and per-sample descriptions (`SAMPLE_DESCRIPTIONS`), so a first-time user can understand a result without leaving the app. `SAMPLE_DESCRIPTIONS` is also reused by `api/app.py`'s `/samples` endpoint, so API consumers get the same descriptions.
+
 ### Docs split by audience
 - `README.md` — quick start and feature overview.
 - `docs/usage.md` — end-user guide to the four input methods and how to read the risk charts.

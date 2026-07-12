@@ -11,7 +11,13 @@ except ImportError:
 
 import pandas as pd
 
-from .config import ANTHROPIC_API_KEY
+from .config import (
+    ANTHROPIC_API_KEY,
+    CORRELATION_THRESHOLD,
+    DEFAULT_GEOGRAPHY_LIMIT,
+    DEFAULT_ISSUER_LIMIT,
+    DEFAULT_SECTOR_LIMIT,
+)
 from .data_loader import load_portfolio_json, load_portfolio_csv
 from .normalizer import normalize_portfolio, dataframe_to_raw_portfolio
 from .risk_engine import evaluate_exposures, score_severity
@@ -21,11 +27,27 @@ from .visualization import build_charts, STATUS_COLORS
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 SAMPLE_PATH = DATA_DIR / "sample_portfolio.json"
+CSV_TEMPLATE_PATH = DATA_DIR / "sample_holdings_template.csv"
 
 SAMPLE_PORTFOLIOS = {
     "Concentrated (Critical risk)": DATA_DIR / "sample_portfolio.json",
     "Emerging markets (Medium risk)": DATA_DIR / "sample_portfolio_moderate.json",
     "Diversified (Low risk)": DATA_DIR / "sample_portfolio_diversified.json",
+}
+
+SAMPLE_DESCRIPTIONS = {
+    "Concentrated (Critical risk)": (
+        "Two issuer breaches, one sector breach, and a correlated cluster — "
+        "shows what a CRITICAL alert with multiple escalation actions looks like."
+    ),
+    "Emerging markets (Medium risk)": (
+        "Issuer and sector weights sit near their limits (WARNING, not BREACH), plus a "
+        "correlated cluster below the flag threshold — shows a MEDIUM alert with no breaches."
+    ),
+    "Diversified (Low risk)": (
+        "15 holdings spread across issuers, sectors, and geographies, all within limits — "
+        "shows what a clean LOW severity result looks like."
+    ),
 }
 
 HOLDING_COLUMNS = [
@@ -81,6 +103,15 @@ def analyze_portfolio(raw_portfolio: Dict[str, Any]) -> Dict[str, Any]:
     audit_notes = record_audit_entry(portfolio.portfolio_id, f"Severity {score['severity']} with {len(actions)} escalation actions.")
     notification_results = send_notifications(portfolio.portfolio_id, score["severity"], action_objects)
 
+    top_issuer = exposures["issuer_concentration"][0] if exposures["issuer_concentration"] else None
+    portfolio_overview = {
+        "holdings_count": len(portfolio.holdings),
+        "total_market_value": round(sum(holding.market_value for holding in portfolio.holdings), 2),
+        "top_position": (
+            {"issuer": top_issuer["key"], "weight_pct": top_issuer["value_pct"]} if top_issuer else None
+        ),
+    }
+
     return {
         "portfolio_id": portfolio.portfolio_id,
         "fund": portfolio.fund,
@@ -89,6 +120,7 @@ def analyze_portfolio(raw_portfolio: Dict[str, Any]) -> Dict[str, Any]:
         "confidence": score["confidence"],
         "rationale": rationale_result["rationale"],
         "token_usage": rationale_result["token_usage"],
+        "portfolio_overview": portfolio_overview,
         "exposures": exposures,
         "actions": actions,
         "audit_notes": audit_notes,
@@ -118,17 +150,42 @@ def _token_usage_markdown(token_usage: Dict[str, int]) -> str:
     )
 
 
+def _portfolio_overview_markdown(overview: Dict[str, Any]) -> str:
+    parts = [f"{overview['holdings_count']} holdings", f"${overview['total_market_value']:,.0f} total market value"]
+    top_position = overview.get("top_position")
+    if top_position:
+        parts.append(f"largest position: {top_position['issuer']} ({top_position['weight_pct']}%)")
+    return "**Portfolio snapshot:** " + " · ".join(parts)
+
+
 def _severity_summary_markdown(result: Dict[str, Any]) -> str:
     emoji = SEVERITY_EMOJI.get(result["severity"], "⚪")
     return (
         f"### {emoji} Severity: {result['severity']}  |  Confidence: {result['confidence']}%\n\n"
         f"**Portfolio:** {result['portfolio_id']} ({result['fund']})\n\n"
         f"{result['rationale']}\n\n"
+        f"{_portfolio_overview_markdown(result['portfolio_overview'])}\n\n"
         f"{_token_usage_markdown(result['token_usage'])}"
     )
 
 def _error_markdown(message: str) -> str:
     return f"### ⚠️ Error\n{message}"
+
+
+def _how_to_read_markdown() -> str:
+    return (
+        f"**Risk limits used:** issuer ≤ {DEFAULT_ISSUER_LIMIT}% · sector ≤ {DEFAULT_SECTOR_LIMIT}% · "
+        f"geography ≤ {DEFAULT_GEOGRAPHY_LIMIT}% · correlation cluster flagged above "
+        f"{CORRELATION_THRESHOLD * 100:.0f}% combined weight (configurable via `.env`).\n\n"
+        "**Severity:**\n"
+        "- 🟢 LOW — everything within limits, no action needed\n"
+        "- 🟡 MEDIUM — a warning or a correlated cluster, worth keeping an eye on\n"
+        "- 🟠 HIGH — one limit breached, review the position\n"
+        "- 🔴 CRITICAL — multiple breaches, or one badly over its limit — act now\n\n"
+        "**Chart colors** (same meaning in every chart): 🟢 OK · 🟡 WARNING (within 90% of the limit) · "
+        "🔴 BREACH (over the limit) · 🟠 WATCH (correlated, under the flag threshold) · "
+        "🔴 FLAGGED (correlated, over the flag threshold)."
+    )
 
 
 def _render(result: Dict[str, Any]) -> Tuple[Any, ...]:
@@ -218,6 +275,8 @@ def build_demo() -> Any:
             "Bring in portfolio data any of four ways below, then review severity, rationale, "
             "and concentration risk charts."
         )
+        with gr.Accordion("How to read this analysis", open=False):
+            gr.Markdown(_how_to_read_markdown())
 
         with gr.Tabs():
             with gr.TabItem("Paste JSON"):
@@ -230,10 +289,18 @@ def build_demo() -> Any:
 
             with gr.TabItem("Upload File"):
                 gr.Markdown(
-                    "Upload a `.json` portfolio payload, or a `.csv` with one row per holding "
-                    "(columns: `issuer, asset_type, sector, geography, market_value, weight_pct, "
-                    "volatility_30d, correlation_group`). The fields below only apply to CSV uploads."
+                    "Upload a `.json` portfolio payload, or a `.csv` with one row per holding. "
+                    "Not sure where to start? Download a template below, edit it, then upload it back.\n\n"
+                    "**CSV columns:** `issuer` (name) · `asset_type` (Equity/Bond/...) · `sector` · "
+                    "`geography` (country/region) · `market_value` (currency amount) · `weight_pct` "
+                    "(% of portfolio; leave 0 to auto-compute from market_value) · `volatility_30d` "
+                    "(optional, 0-1 scale) · `correlation_group` (optional; holdings sharing a group "
+                    "are checked for correlated concentration). The Portfolio ID/Fund/As Of fields "
+                    "below only apply to CSV uploads, since a holdings CSV has no place for that metadata."
                 )
+                with gr.Row():
+                    gr.File(value=str(CSV_TEMPLATE_PATH), label="Download: CSV template")
+                    gr.File(value=str(SAMPLE_PATH), label="Download: JSON example")
                 upload_file = gr.File(label="Portfolio file (.json or .csv)", file_types=[".json", ".csv"])
                 with gr.Row():
                     upload_portfolio_id = gr.Textbox(label="Portfolio ID (CSV only)", value="UPLOAD-001")
@@ -242,7 +309,12 @@ def build_demo() -> Any:
                 analyze_file_btn = gr.Button("Analyze Uploaded File", variant="primary")
 
             with gr.TabItem("Manual Entry"):
-                gr.Markdown("Edit the holdings grid directly (add/remove rows), then analyze.")
+                gr.Markdown(
+                    "Edit the holdings grid directly (add/remove rows), then analyze. "
+                    "`weight_pct` is % of the portfolio (leave 0 to auto-compute from `market_value`); "
+                    "`correlation_group` is optional — holdings sharing a group are checked together "
+                    "for correlated concentration risk."
+                )
                 with gr.Row():
                     manual_portfolio_id = gr.Textbox(label="Portfolio ID", value="MANUAL-001")
                     manual_fund = gr.Textbox(label="Fund Name", value="Manual Entry Fund")
@@ -259,12 +331,19 @@ def build_demo() -> Any:
 
             with gr.TabItem("Sample Portfolios"):
                 gr.Markdown("Pick a pre-built sample to compare how different risk profiles look.")
+                default_sample_label = list(SAMPLE_PORTFOLIOS.keys())[0]
                 sample_dropdown = gr.Dropdown(
                     choices=list(SAMPLE_PORTFOLIOS.keys()),
-                    value=list(SAMPLE_PORTFOLIOS.keys())[0],
+                    value=default_sample_label,
                     label="Sample Portfolio",
                 )
+                sample_description = gr.Markdown(value=SAMPLE_DESCRIPTIONS[default_sample_label])
                 analyze_sample_btn = gr.Button("Load & Analyze Sample", variant="primary")
+                sample_dropdown.change(
+                    fn=lambda label: SAMPLE_DESCRIPTIONS[label],
+                    inputs=sample_dropdown,
+                    outputs=sample_description,
+                )
 
         gr.Markdown("---\n## Risk Analysis Result")
         severity_summary = gr.Markdown(value=_severity_summary_markdown(default_result))

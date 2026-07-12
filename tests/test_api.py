@@ -17,14 +17,19 @@ def test_list_samples_endpoint():
     assert response.status_code == 200
     samples = response.json()["samples"]
     assert len(samples) >= 3
+    assert all("name" in sample and "description" in sample for sample in samples)
+    assert all(sample["description"] for sample in samples)
 
 
 def test_analyze_sample_endpoint():
     client = TestClient(app)
     samples = client.get("/samples").json()["samples"]
-    response = client.get(f"/samples/{samples[0]}")
+    response = client.get(f"/samples/{samples[0]['name']}")
     assert response.status_code == 200
-    assert "severity" in response.json()
+    body = response.json()
+    assert "severity" in body
+    assert "portfolio_overview" in body
+    assert body["portfolio_overview"]["holdings_count"] > 0
 
 
 def test_analyze_sample_endpoint_unknown_name():

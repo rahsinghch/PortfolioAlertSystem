@@ -32,6 +32,7 @@ Gradio tab **"Upload File"**, or `POST /analyze/upload` (multipart form).
 
 - `.json` files are read as a full portfolio payload, same shape as above.
 - `.csv` files need one row per holding, with columns: `issuer, asset_type, sector, geography, market_value, weight_pct, volatility_30d, correlation_group`. Since a holdings CSV has no place for portfolio-level metadata, supply `portfolio_id`, `fund`, and (optionally) `as_of` as separate fields — form fields in the API, textboxes above the upload button in the UI.
+- Not sure where to start? The Gradio tab has two download links — a CSV template (`data/sample_holdings_template.csv`) and a full JSON example (`data/sample_portfolio.json`) — download one, edit it, and upload it back.
 
 Example API call:
 ```
@@ -44,14 +45,14 @@ curl -X POST http://127.0.0.1:8000/analyze/upload \
 Use this for ad hoc files exported from a portfolio management system or spreadsheet.
 
 ### 3. Manual entry table
-Gradio tab **"Manual Entry"** only (no direct API equivalent). An editable grid pre-filled with two example rows — add, edit, or delete rows directly, set the portfolio ID/fund name/as-of date, then click **Analyze Table**.
+Gradio tab **"Manual Entry"** only (no direct API equivalent). An editable grid pre-filled with two example rows — add, edit, or delete rows directly, set the portfolio ID/fund name/as-of date, then click **Analyze Table**. `weight_pct` can be left at 0 to auto-compute from `market_value`; `correlation_group` is optional.
 
 Use this to sanity-check a hypothetical or "what-if" holding mix without preparing a file first.
 
 ### 4. Sample portfolios
-Gradio tab **"Sample Portfolios"** — a dropdown of three pre-built examples with different risk profiles, or via the API:
+Gradio tab **"Sample Portfolios"** — a dropdown of three pre-built examples with different risk profiles (selecting one shows a description of what makes it that risk level, before you even run the analysis), or via the API:
 
-- `GET /samples` — lists the available sample names.
+- `GET /samples` — lists the available samples, each with a `name` and a `description` of its risk profile.
 - `GET /samples/{sample_name}` — runs the analysis for that sample directly.
 
 | Sample | Profile |
@@ -76,6 +77,12 @@ Every analysis (regardless of which input method produced it) renders four chart
   - 🔴 red = **FLAGGED** (correlated and over the 85% correlation-weight threshold)
 
 The severity summary above the charts uses the same color convention (🟢 LOW, 🟡 MEDIUM, 🟠 HIGH, 🔴 CRITICAL) so the headline severity and the chart-level detail always agree.
+
+The Gradio UI also has a collapsible **"How to read this analysis"** panel above the input tabs, showing the exact risk limits in effect (issuer/sector/geography/correlation thresholds, pulled live from configuration) and what each severity level and chart color means — so you don't need to leave the app to understand the result.
+
+## Understanding the portfolio itself
+
+Every severity summary includes a **"Portfolio snapshot"** line — holdings count, total market value, and the largest single position — so you can sanity-check what was actually analyzed (e.g. "did my CSV upload parse the number of rows I expected?") before digging into the risk charts. It's also available programmatically as the `portfolio_overview` field on every analysis result.
 
 ## Token usage
 
