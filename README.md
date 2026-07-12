@@ -4,6 +4,8 @@ A Python implementation of the Wissen Technology Hackathon 2026 portfolio risk a
 
 ## What is included
 - `PROJECT_PLAN.md`: Full implementation plan, architecture, task breakdown, and deployment guide.
+- `ARCHITECTURE.md`: The system as built — data flow, module responsibilities, and design decisions.
+- `DEVELOPMENT_RETROSPECTIVE.md`: How this app was actually built through AI-assisted prompts — what worked, what didn't, the challenges hit and how they were resolved, debugging techniques, and a strategy for rebuilding it.
 - `docs/usage.md`: How to input portfolio data (paste JSON, file upload, manual entry, samples) and how to read the risk charts.
 - `docs/prompts.md`: Claude prompt templates needed for concentration analysis, risk scoring, and escalation.
 - `requirements.txt`: Python dependencies for FastAPI, Gradio, data processing, and Anthropic Claude.
