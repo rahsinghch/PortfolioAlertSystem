@@ -6,6 +6,7 @@ A Python implementation of the Wissen Technology Hackathon 2026 portfolio risk a
 - `PROJECT_PLAN.md`: Full implementation plan, architecture, task breakdown, and deployment guide.
 - `ARCHITECTURE.md`: The system as built — data flow, module responsibilities, and design decisions.
 - `DEVELOPMENT_RETROSPECTIVE.md`: How this app was actually built through AI-assisted prompts — what worked, what didn't, the challenges hit and how they were resolved, debugging techniques, and a strategy for rebuilding it.
+- `ROADMAP_AND_LIMITATIONS.md`: An honest gap analysis — desirable features that don't exist yet, and known shortcomings in what's already built.
 - `docs/usage.md`: How to input portfolio data (paste JSON, file upload, manual entry, samples) and how to read the risk charts.
 - `docs/prompts.md`: Claude prompt templates needed for concentration analysis, risk scoring, and escalation.
 - `requirements.txt`: Python dependencies for FastAPI, Gradio, data processing, and Anthropic Claude.
@@ -22,8 +23,8 @@ A Python implementation of the Wissen Technology Hackathon 2026 portfolio risk a
 - **Automated escalation**: Slack/webhook/email notification adapters and an audit trail entry per alert.
 
 ## Deployment targets
-- Hugging Face Spaces: Use `src/app.py` with Gradio.
-- Vercel: Use `api/app.py` with `vercel.json`.
+- Vercel: Use `api/app.py` with `vercel.json`. Verified working — see `DEVELOPMENT_RETROSPECTIVE.md` §3 for the real deployment issues found and fixed along the way.
+- Hugging Face Spaces: Use `src/app.py` with Gradio. **Not yet verified** — deployment was blocked by Hugging Face requiring a paid plan for any Python-backed Space; see `ROADMAP_AND_LIMITATIONS.md`.
 
 ## How to get started
 1. Install dependencies: `python -m pip install -r requirements.txt`
